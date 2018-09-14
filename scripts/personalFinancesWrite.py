@@ -8,7 +8,7 @@ import os
 
 def writeDataToFile(filename,data,catagories,types,subtypes):
 
-    path = os.path.dirname(__file__)
+    path = os.path.dirname(os.path.dirname(__file__))
 
     readFile = open(path + '\\' + filename, 'r')
     oldCatagories = readFile.readline().strip().split("\t")

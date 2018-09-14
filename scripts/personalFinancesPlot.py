@@ -11,7 +11,7 @@ def plotThedata(filename):
     ################################################################################
     '''
 
-    path = os.path.dirname(__file__)
+    path = os.path.dirname(os.path.dirname(__file__))
     file = open(path + '\\' + filename, 'r')
     catagories = file.readline().strip().split("\t")
     types = file.readline().strip().split("\t")

@@ -19,8 +19,8 @@ class MainApplication(tk.Frame):
         master.title = 'Personal Finances'
 
         ## Variable Initiation ##
-        self.filename = 'personalFinancesData.txt'
-        self.path = os.path.dirname(__file__)
+        self.filename = 'data\personalFinancesData.txt'
+        self.path = os.path.dirname(os.path.dirname(__file__))
         self.readFile = open(self.path + '\\' + self.filename, 'r')
         self.catagories = self.readFile.readline().strip().split("\t")
         self.types = self.readFile.readline().strip().split("\t")
