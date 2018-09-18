@@ -67,7 +67,7 @@ class MainApplication(tk.Frame):
         self.subtypeChoser = tk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
 
         ## Add GUI Elements ##
-        self.titleLabel = tk.Label(master, text='Personal Finances GUI')
+        self.titleLabel = tk.Label(master, text='Finance Tracker')
         self.titleLabel.config(font=("Courier", 20))
         self.titleLabel.grid(row=0, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
         self.endLabel = tk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
