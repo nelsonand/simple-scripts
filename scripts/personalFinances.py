@@ -5,8 +5,6 @@
 '''
 
 import os
-import json
-import copy
 import numpy as np
 from datetime import datetime
 import tkinter as tk
@@ -18,49 +16,29 @@ class MainApplication(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         tk.Frame.__init__(self, master, *args, **kwargs)
         self.master = master
-        master.title = 'Finance Tracker'
-        self.path = os.path.dirname(os.path.dirname(__file__))
-        self.ctime = datetime.now().strftime('%Y-%m-%d')
-        os.chdir(self.path)
+        master.title = 'Personal Finances'
 
         ## Variable Initiation ##
-        self.filename = 'data\personalFinancesData_test.json'
-        os.remove('data\personalFinancesData_test.json')                                ## REMOVE THIS!! ##
-        try: # Simply try to open datafile. Close it and continue.
-            f = open(self.filename); f.close()
-        except FileNotFoundError: # Initialize data file
-            print('Building %s...' % self.filename)
-            start_data = {
-                'data': {'Date': ['2018-09-15', self.ctime], 'Elevations Checking': [000, 123]},
-                'type': {'Date': ['Date'], 'Elevations Checking': ['type_test']},
-                'subtype': {'Date': ['Date'], 'Elevations Checking': ['subtype_test']},
-                'comment': {'Date': [None]}
-            }
-            with open(self.filename, "w") as write_file:
-                json.dump(start_data, write_file)
-
-        with open(self.filename, "r") as read_file:
-            old_data = json.load(read_file)
-
-        self.new_data = copy.deepcopy(old_data) # So that you don't overwrite stuff
-        self.catagories = []
-        for cat in self.new_data['data'].keys():
-            self.catagories.append(cat)
-        self.types = list(self.new_data['type'].keys())
-        self.subtypes = list(self.new_data['subtype'].keys())
+        self.filename = 'data\personalFinancesData.txt'
+        self.path = os.path.dirname(os.path.dirname(__file__))
+        self.readFile = open(self.path + '\\' + self.filename, 'r')
+        self.catagories = self.readFile.readline().strip().split("\t")
+        self.types = self.readFile.readline().strip().split("\t")
+        self.subtypes = self.readFile.readline().strip().split("\t")
+        self.readFile.close()
 
         self.entries = {}
         self.data = {}
         self.data_test = {}
         self.catName = {}
         self.catVal = {}
+        self.ctime = datetime.now().strftime('%Y-%m-%d')
 
         self.typeChoices = np.unique(self.types).tolist()
-        self.typeChoices.append('New')
-        self.typeChoices.remove('Date')
+        self.typeChoices.remove('Month')
         self.subtypeChoices = np.unique(self.subtypes).tolist()
         self.subtypeChoices.append('New')
-        self.subtypeChoices.remove('Date')
+        self.subtypeChoices.remove('Month')
         self.newType = tk.StringVar(root)
         self.newSubtype = tk.StringVar(root)
         self.typeChoser = tk.OptionMenu(master, self.newType, *self.typeChoices)
