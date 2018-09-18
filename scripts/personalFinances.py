@@ -25,7 +25,6 @@ class MainApplication(tk.Frame):
 
         ## Variable Initiation ##
         self.filename = 'data\personalFinancesData_test.json'
-        os.remove('data\personalFinancesData_test.json')                                ## REMOVE THIS!! ##
         try: # Simply try to open datafile. Close it and continue.
             f = open(self.filename); f.close()
         except FileNotFoundError: # Initialize data file
