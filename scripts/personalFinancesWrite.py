@@ -1,46 +1,42 @@
-import os
-
 '''
 ################################################################################
 #                               Write the Stuff                                #
 ################################################################################
 '''
 
-def writeDataToFile(filename,data,catagories,types,subtypes):
+import os
+import json
+import copy
 
+def writeDataToFile(filename,data,catagories,types,subtypes,cur_data):
     path = os.path.dirname(os.path.dirname(__file__))
+    writeFile = open(path + '\\' + filename, 'r')
+    new_data = copy.deepcopy(cur_data) # So that you don't overwrite stuff
 
-    readFile = open(path + '\\' + filename, 'r')
-    oldCatagories = readFile.readline().strip().split("\t")
-    readFile.close()
+    ## Compare catgories and prepare new_data ##
+    cur_cat = []
+    for cat in cur_data['data'].keys():
+        cur_cat.append(cat)
 
-    if len(data) == len(catagories) == len(types) == len(subtypes):
-        if len(catagories) < len(oldCatagories):
-            print('Insufficient data...')
-        elif len(catagories) == len(oldCatagories):
-            writeStr = ''.join([x + '\t' for x in data])
-            writeFile = open(path + '\\' + filename, 'a')
-            writeFile.write(writeStr.replace('none', '') + '\n')
-            writeFile.close()
-            print('Data added!')
-        else: # len(catagories) > len(oldCatagories):
+    print('%d new catagories detected!' % (len(catagories) - len(cur_cat)))
+    for i,cat in enumerate(cur_cat):
+        try:
+            new_data['data'][cat].append(float(data[i]))
+        except ValueError: # This is the date
+            print('Adding data for %s' % data[i])
+            new_data['data'][cat].append(data[i])
+
+    if len(catagories) > len(cur_cat): # Need to add a new catagory
+        newcat = copy.copy(catagories)
+        [newcat.remove(x) for x in cur_cat]
+        newcatdata = [data[x] for x in range(0,len(data)) if catagories[x] not in cur_cat]
+        for i,cat in enumerate(newcat):
             print('Adding a new catagory...')
-            myFile = open(path + '\\' + filename,'r')
-            catLine = myFile.readline()
-            typLine = myFile.readline()
-            subLine = myFile.readline()
-            newCatLine = ''.join([x + '\t' for x in catagories])
-            newTypLine = ''.join([x + '\t' for x in types])
-            newSubLine = ''.join([x + '\t' for x in subtypes])
-            rest = ''.join(myFile.readlines())
-            myFile.close()
-            myFile = open(path + '\\' + filename, 'w')
-            myFile.write(newCatLine + '\n' + newTypLine + '\n' + newSubLine + '\n' + rest)
-            myFile.close()
-            writeStr = ''.join([x + '\t' for x in data])
-            writeFile = open(path + '\\' + filename, 'a')
-            writeFile.write(writeStr.replace('none', '') + '\n')
-            writeFile.close()
-            print('Data added!')
-    else:
-        print('Insufficient data...')
+            new_data['data'][cat] = [None] * (len(new_data['data']['Date']) - 1)
+            new_data['data'][cat].append(float(newcatdata[i]))
+            print('Data for %s added!' % cat)
+
+    with open(filename, "w") as write_file:
+        json.dump(new_data, write_file)
+
+    print('Data stored in %s.' % filename)
