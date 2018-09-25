@@ -23,21 +23,41 @@ class MainApplication(tk.Frame):
         self.ctime = datetime.now().strftime('%Y-%m-%d')
         os.chdir(self.path)
 
-        ## Variable Initiation ##
-        self.filename = 'data\personalFinancesData.txt'
-        self.path = os.path.dirname(os.path.dirname(__file__))
-        self.readFile = open(self.path + '\\' + self.filename, 'r')
-        self.catagories = self.readFile.readline().strip().split("\t")
-        self.types = self.readFile.readline().strip().split("\t")
-        self.subtypes = self.readFile.readline().strip().split("\t")
-        self.readFile.close()
+        ## Initiate Datafile ##
+        self.filename = 'data\personalFinancesData_test.json'
+        try: # Simply try to open datafile. Close it and continue.
+            f = open(self.filename); f.close()
+        except FileNotFoundError: # Initialize data file
+            print('Building %s...' % self.filename)
+            start_data = {
+                'data': {'Date': [self.ctime]},
+                'type': {'Date': ['Date']},
+                'subtype': {'Date': ['Date']},
+                'comment': {'Date': [None]}
+            }
+            with open(self.filename, "w") as write_file:
+                json.dump(start_data, write_file)
+
+        ## Get Data ##
+        with open(self.filename, "r") as read_file:
+            old_data = json.load(read_file)
+
+        ## Setup Variables ##
+        self.cur_data = copy.deepcopy(old_data) # So that you don't overwrite stuff
+        self.catagories = []
+        self.types = []
+        self.subtypes = []
+        for cat in self.cur_data['data'].keys():
+            self.catagories.append(cat)
+            self.types.append(self.cur_data['type'][cat])
+            self.subtypes.append(self.cur_data['subtype'][cat])
 
         self.entries = {}
         self.data = {}
-        self.data_test = {}
         self.catName = {}
         self.catVal = {}
 
+        ## Setup Type/Subtype Options ##
         self.typeChoices = np.unique(self.types).tolist()
         self.typeChoices.append('New')
         self.typeChoices.remove('Date')
@@ -50,7 +70,7 @@ class MainApplication(tk.Frame):
         self.subtypeChoser = tk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
 
         ## Add GUI Elements ##
-        self.titleLabel = tk.Label(master, text='Personal Finances GUI')
+        self.titleLabel = tk.Label(master, text='Finance Tracker')
         self.titleLabel.config(font=("Courier", 20))
         self.titleLabel.grid(row=0, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
         self.endLabel = tk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
@@ -58,21 +78,21 @@ class MainApplication(tk.Frame):
 
         self.val_numb = master.register(self.validateNumb) # we have to wrap the command
         self.val_date = master.register(self.validateDate) # we have to wrap the command
-        for col,catagory in enumerate(self.catagories):
-            self.catName[catagory] = tk.Label(master, text=catagory)
-            self.catName[catagory].grid(row=1, column=col)
+        for col,cat in enumerate(self.catagories):
+            self.catName[cat] = tk.Label(master, text=cat)
+            self.catName[cat].grid(row=1, column=col)
             if col == 0:
-                self.data[catagory] = self.ctime
-                self.catVal[catagory] = tk.Entry(master, validate="key", validatecommand=(self.val_date, '%P'), bg='green')
-                self.catVal[catagory].insert(tk.END, self.ctime)
-                self.catVal[catagory].grid(row=2, column=col)
-                self.entries[catagory] = self.catVal[catagory]
+                self.data[cat] = self.ctime
+                self.catVal[cat] = tk.Entry(master, validate="key", validatecommand=(self.val_date, '%P'), bg='green')
+                self.catVal[cat].insert(tk.END, self.ctime)
+                self.catVal[cat].grid(row=2, column=col)
+                self.entries[cat] = self.catVal[cat]
             else:
-                self.data[catagory] = 0
-                self.catVal[catagory] = tk.Entry(master, validate="key", validatecommand=(self.val_numb, '%P'), bg='red')
-                self.catVal[catagory].insert(tk.END, 0)
-                self.catVal[catagory].grid(row=2, column=col)
-                self.entries[catagory] = self.catVal[catagory]
+                self.data[cat] = 0
+                self.catVal[cat] = tk.Entry(master, validate="key", validatecommand=(self.val_numb, '%P'), bg='red')
+                self.catVal[cat].insert(tk.END, 0)
+                self.catVal[cat].grid(row=2, column=col)
+                self.entries[cat] = self.catVal[cat]
 
         self.add_Data = tk.Button(master, text='Add new catagory.', command=lambda: self.addData())
         self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
@@ -195,21 +215,21 @@ class MainApplication(tk.Frame):
         self.subConfirm = {}
         self.dataConfirm = {}
 
-        for col,catagory in enumerate(self.catagories):
+        for col,cat in enumerate(self.catagories):
             if col == 0: # Make data list #
-                self.data[catagory] = self.entries[catagory].get()
+                self.data[cat] = self.entries[cat].get()
             else:
-                self.data[catagory] = str(round(float(self.entries[catagory].get()),2))
+                self.data[cat] = str(round(float(self.entries[cat].get()),2))
             self.dataList = list(self.data.values())
 
-            self.catConfirm[catagory] = tk.Label(self.master, text=''.join(self.catagories[col]))
-            self.catConfirm[catagory].grid(row=1, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.typConfirm[catagory] = tk.Label(self.master, text=''.join(self.types[col]))
-            self.typConfirm[catagory].grid(row=2, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.subConfirm[catagory] = tk.Label(self.master, text=''.join(self.subtypes[col]))
-            self.subConfirm[catagory].grid(row=3, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.dataConfirm[catagory] = tk.Label(self.master, text=''.join(self.dataList[col]))
-            self.dataConfirm[catagory].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.catConfirm[cat] = tk.Label(self.master, text=''.join(self.catagories[col]))
+            self.catConfirm[cat].grid(row=1, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.typConfirm[cat] = tk.Label(self.master, text=''.join(self.types[col]))
+            self.typConfirm[cat].grid(row=2, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.subConfirm[cat] = tk.Label(self.master, text=''.join(self.subtypes[col]))
+            self.subConfirm[cat].grid(row=3, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.dataConfirm[cat] = tk.Label(self.master, text=''.join(self.dataList[col]))
+            self.dataConfirm[cat].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E)
 
         self.confirm = tk.Button(self.master, text='Confim Data Entry.', command=lambda: self.confirmWrite())
         self.confirm.grid(row=5,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
@@ -219,7 +239,7 @@ class MainApplication(tk.Frame):
         self.plot_Data.config(state='normal')
 
         # write data! #
-        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes)
+        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes, cur_data=self.cur_data)
 
     def plotData(self):
         plt.plotThedata(filename=self.filename)
