@@ -5,6 +5,8 @@
 '''
 
 import os
+import json
+import copy
 import numpy as np
 from datetime import datetime
 import tkinter as tk
@@ -16,7 +18,10 @@ class MainApplication(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         tk.Frame.__init__(self, master, *args, **kwargs)
         self.master = master
-        master.title = 'Personal Finances'
+        master.title = 'Finance Tracker'
+        self.path = os.path.dirname(os.path.dirname(__file__))
+        self.ctime = datetime.now().strftime('%Y-%m-%d')
+        os.chdir(self.path)
 
         ## Variable Initiation ##
         self.filename = 'data\personalFinancesData.txt'
@@ -32,13 +37,13 @@ class MainApplication(tk.Frame):
         self.data_test = {}
         self.catName = {}
         self.catVal = {}
-        self.ctime = datetime.now().strftime('%Y-%m-%d')
 
         self.typeChoices = np.unique(self.types).tolist()
-        self.typeChoices.remove('Month')
+        self.typeChoices.append('New')
+        self.typeChoices.remove('Date')
         self.subtypeChoices = np.unique(self.subtypes).tolist()
         self.subtypeChoices.append('New')
-        self.subtypeChoices.remove('Month')
+        self.subtypeChoices.remove('Date')
         self.newType = tk.StringVar(root)
         self.newSubtype = tk.StringVar(root)
         self.typeChoser = tk.OptionMenu(master, self.newType, *self.typeChoices)
