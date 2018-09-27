@@ -10,15 +10,16 @@ import copy
 import numpy as np
 from datetime import datetime
 import tkinter as tk
+from tkinter import ttk
 import personalFinancesWrite as wrt
 import personalFinancesPlot as plt
 
-class MainApplication(tk.Frame):
+class MainApplication(ttk.Frame):
 
     def __init__(self, master, *args, **kwargs):
-        tk.Frame.__init__(self, master, *args, **kwargs)
+        ttk.Frame.__init__(self, master, *args, **kwargs)
         self.master = master
-        master.title = 'Finance Tracker'
+        master.title("Oak's Finance Tracker")
         self.path = os.path.dirname(os.path.dirname(__file__))
         self.ctime = datetime.now().strftime('%Y-%m-%d')
         os.chdir(self.path)
@@ -66,41 +67,41 @@ class MainApplication(tk.Frame):
         self.subtypeChoices.remove('Date')
         self.newType = tk.StringVar(root)
         self.newSubtype = tk.StringVar(root)
-        self.typeChoser = tk.OptionMenu(master, self.newType, *self.typeChoices)
-        self.subtypeChoser = tk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
+        self.typeChoser = ttk.OptionMenu(master, self.newType, *self.typeChoices)
+        self.subtypeChoser = ttk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
 
         ## Add GUI Elements ##
-        self.titleLabel = tk.Label(master, text='Finance Tracker')
-        self.titleLabel.config(font=("Courier", 20))
+        self.titleLabel = ttk.Label(master, text='Finance Tracker')
+        self.titleLabel.config(font=('Courier', 20, 'bold'))
         self.titleLabel.grid(row=0, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
-        self.endLabel = tk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
+        self.endLabel = ttk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
         self.endLabel.grid(row=7, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
         self.val_numb = master.register(self.validateNumb) # we have to wrap the command
         self.val_date = master.register(self.validateDate) # we have to wrap the command
         for col,cat in enumerate(self.catagories):
-            self.catName[cat] = tk.Label(master, text=cat)
-            self.catName[cat].grid(row=1, column=col)
+            self.catName[cat] = ttk.Label(master, text=cat)
+            self.catName[cat].grid(row=1, column=col, sticky=tk.W+tk.E)
             if col == 0:
                 self.data[cat] = self.ctime
-                self.catVal[cat] = tk.Entry(master, validate="key", validatecommand=(self.val_date, '%P'), bg='green')
+                self.catVal[cat] = ttk.Entry(master, validate="key", validatecommand=(self.val_date, '%P'))
                 self.catVal[cat].insert(tk.END, self.ctime)
                 self.catVal[cat].grid(row=2, column=col)
                 self.entries[cat] = self.catVal[cat]
             else:
                 self.data[cat] = 0
-                self.catVal[cat] = tk.Entry(master, validate="key", validatecommand=(self.val_numb, '%P'), bg='red')
+                self.catVal[cat] = ttk.Entry(master, validate="key", validatecommand=(self.val_numb, '%P'))
                 self.catVal[cat].insert(tk.END, 0)
                 self.catVal[cat].grid(row=2, column=col)
                 self.entries[cat] = self.catVal[cat]
 
-        self.add_Data = tk.Button(master, text='Add new catagory.', command=lambda: self.addData())
+        self.add_Data = ttk.Button(master, text='Add new catagory.', command=lambda: self.addData())
         self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
-        self.write_Data = tk.Button(master, text='Write data to file.', command=lambda: self.writeData())
+        self.write_Data = ttk.Button(master, text='Write data to file.', command=lambda: self.writeData())
         self.write_Data.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
-        self.plot_Data = tk.Button(master, text='Show plot.', command=lambda: self.plotData())
+        self.plot_Data = ttk.Button(master, text='Show plot.', command=lambda: self.plotData())
         self.plot_Data.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
     ''' other functions '''
@@ -127,9 +128,9 @@ class MainApplication(tk.Frame):
         self.add_Data.config(state='disabled')
         self.write_Data.config(state='disabled')
         self.plot_Data.config(state='disabled')
-        self.newName = tk.Entry(self.master)
+        self.newName = ttk.Entry(self.master)
         self.newName.grid(row=1, column=len(self.catagories)+1)
-        self.confirm = tk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('catagory',self.newName.get()))
+        self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('catagory',self.newName.get()))
         self.confirm.grid(row=2, column=len(self.catagories)+1)
 
     def confirmNew(self, stage, catagory):
@@ -137,30 +138,30 @@ class MainApplication(tk.Frame):
             self.newCat = self.newName.get()
             if self.newCat not in self.catagories:
                 self.newName.grid_forget()
-                self.catName[catagory] = tk.Label(self.master, text=' ' + self.newCat + ' ')
-                self.catName[catagory].grid(row=1, column=len(self.catagories)+1)
+                self.catName[catagory] = ttk.Label(self.master, text=' ' + self.newCat + ' ')
+                self.catName[catagory].grid(row=1, column=len(self.catagories)+1, sticky=tk.W+tk.E)
                 self.confirm.grid_forget()
                 self.newType.set(self.typeChoices[0]) # set the default option
                 self.typeChoser.grid(row=2, column=len(self.catagories)+1)
-                self.confirm = tk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('type', self.newCat))
+                self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('type', self.newCat))
                 self.confirm.grid(row=3, column=len(self.catagories)+1)
         elif stage == 'type':
             self.types.append(self.newType.get())
             self.typeChoser.grid_forget()
             self.confirm.grid_forget()
-            self.typeLabel = tk.Label(self.master, text=' ' + self.newType.get() + ' ')
-            self.typeLabel.grid(row=2, column=len(self.catagories)+1)
+            self.typeLabel = ttk.Label(self.master, text=' ' + self.newType.get() + ' ')
+            self.typeLabel.grid(row=2, column=len(self.catagories)+1, sticky=tk.W+tk.E)
             self.newSubtype.set(self.subtypeChoices[0]) # set the default option
             self.subtypeChoser.grid(row=3, column=len(self.catagories)+1)
-            self.confirm = tk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('subtype', self.newCat))
+            self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('subtype', self.newCat))
             self.confirm.grid(row=4, column=len(self.catagories)+1)
         elif stage == 'subtype':
             if self.newSubtype.get() == 'New':
                 self.subtypeChoser.grid_forget()
                 self.confirm.grid_forget()
-                self.newSubtypeEntry = tk.Entry(self.master)
+                self.newSubtypeEntry = ttk.Entry(self.master)
                 self.newSubtypeEntry.grid(row=3, column=len(self.catagories)+1)
-                self.confirm = tk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('new_subtype', self.newCat))
+                self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('new_subtype', self.newCat))
                 self.confirm.grid(row=4, column=len(self.catagories)+1)
             else:
                 self.data[self.newCat] = 0
@@ -169,7 +170,7 @@ class MainApplication(tk.Frame):
                 self.subtypeChoser.grid_forget()
                 self.confirm.grid_forget()
                 self.typeLabel.grid_forget()
-                self.catVal[catagory] = tk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'), bg='red')
+                self.catVal[catagory] = ttk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'))
                 self.catVal[catagory].grid(row=2, column=len(self.catagories))
                 self.catVal[catagory].insert(tk.END, 0)
                 self.entries[self.newCat] = self.catVal[catagory]
@@ -188,7 +189,7 @@ class MainApplication(tk.Frame):
             self.newSubtypeEntry.grid_forget()
             self.confirm.grid_forget()
             self.typeLabel.grid_forget()
-            self.catVal[catagory] = tk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'), bg='red')
+            self.catVal[catagory] = ttk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'))
             self.catVal[catagory].grid(row=2, column=len(self.catagories))
             self.catVal[catagory].insert(tk.END, 0)
             self.entries[self.newCat] = self.catVal[catagory]
@@ -222,16 +223,16 @@ class MainApplication(tk.Frame):
                 self.data[cat] = str(round(float(self.entries[cat].get()),2))
             self.dataList = list(self.data.values())
 
-            self.catConfirm[cat] = tk.Label(self.master, text=''.join(self.catagories[col]))
+            self.catConfirm[cat] = ttk.Label(self.master, text=''.join('  ' + self.catagories[col] + '  '))
             self.catConfirm[cat].grid(row=1, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.typConfirm[cat] = tk.Label(self.master, text=''.join(self.types[col]))
+            self.typConfirm[cat] = ttk.Label(self.master, text=''.join(self.types[col]))
             self.typConfirm[cat].grid(row=2, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.subConfirm[cat] = tk.Label(self.master, text=''.join(self.subtypes[col]))
+            self.subConfirm[cat] = ttk.Label(self.master, text=''.join(self.subtypes[col]))
             self.subConfirm[cat].grid(row=3, column=col, columnspan=1, sticky=tk.W+tk.E)
-            self.dataConfirm[cat] = tk.Label(self.master, text=''.join(self.dataList[col]))
+            self.dataConfirm[cat] = ttk.Label(self.master, text=''.join(self.dataList[col]))
             self.dataConfirm[cat].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E)
 
-        self.confirm = tk.Button(self.master, text='Confim Data Entry.', command=lambda: self.confirmWrite())
+        self.confirm = ttk.Button(self.master, text='Confim Data Entry.', command=lambda: self.confirmWrite())
         self.confirm.grid(row=5,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
     def confirmWrite(self):
@@ -244,7 +245,10 @@ class MainApplication(tk.Frame):
     def plotData(self):
         plt.plotThedata(filename=self.filename)
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    MainApplication(root)
-    root.mainloop()
+root = tk.Tk()
+root.style = ttk.Style()
+root.style.theme_use('vista') # 'winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative'
+root.style.configure('TLabel', background = '#7171C6', anchor='center')
+root.style.configure('TButton', background = 'gold1')
+MainApplication(root)
+root.mainloop()
