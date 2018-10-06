@@ -34,7 +34,7 @@ class MainApplication(ttk.Frame):
                 'data': {'Date': [self.ctime]},
                 'type': {'Date': ['Date']},
                 'subtype': {'Date': ['Date']},
-                'comment': {'Date': [None]}
+                'comment': {[None]}
             }
             with open(self.filename, "w") as write_file:
                 json.dump(start_data, write_file)
@@ -52,23 +52,14 @@ class MainApplication(ttk.Frame):
             self.catagories.append(cat)
             self.types.append(self.cur_data['type'][cat])
             self.subtypes.append(self.cur_data['subtype'][cat])
+        # comments are organized by date
+        self.comments = self.cur_data['comment'] + [None]
+        self.dates = self.cur_data['data']['Date'] + ['Today']
 
         self.entries = {}
         self.data = {}
         self.catName = {}
         self.catVal = {}
-
-        ## Setup Type/Subtype Options ##
-        self.typeChoices = np.unique(self.types).tolist()
-        self.typeChoices.append('New')
-        self.typeChoices.remove('Date')
-        self.subtypeChoices = np.unique(self.subtypes).tolist()
-        self.subtypeChoices.append('New')
-        self.subtypeChoices.remove('Date')
-        self.newType = tk.StringVar(root)
-        self.newSubtype = tk.StringVar(root)
-        self.typeChoser = ttk.OptionMenu(master, self.newType, *self.typeChoices)
-        self.subtypeChoser = ttk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
 
         ## Add GUI Elements ##
         self.titleLabel = ttk.Label(master, text='Finance Tracker')
@@ -95,16 +86,37 @@ class MainApplication(ttk.Frame):
                 self.catVal[cat].grid(row=2, column=col)
                 self.entries[cat] = self.catVal[cat]
 
-        self.add_Data = ttk.Button(master, text='Add new catagory.', command=lambda: self.addData())
+        self.add_Data = ttk.Button(master, text='Add new catagory', command=lambda: self.addData())
         self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
-        self.write_Data = ttk.Button(master, text='Write data to file.', command=lambda: self.writeData())
-        self.write_Data.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Comment = ttk.Button(master, text='Add comment', command=lambda:self.addComment())
+        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
-        self.plot_Data = ttk.Button(master, text='Show plot.', command=lambda: self.plotData())
+        self.new_Comment = ttk.Entry(self.master)
+
+        self.write_Data = ttk.Button(master, text='Write data to file', command=lambda: self.writeData())
+        self.write_Data.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+
+        self.plot_Data = ttk.Button(master, text='Show plot', command=lambda: self.plotData())
         self.plot_Data.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
-    ''' other functions '''
+        ## Setup Type/Subtype Options ##
+        self.typeChoices = np.unique(self.types).tolist()
+        self.typeChoices.append('New')
+        self.typeChoices.remove('Date')
+        self.subtypeChoices = np.unique(self.subtypes).tolist()
+        self.subtypeChoices.append('New')
+        self.subtypeChoices.remove('Date')
+        self.newType = tk.StringVar(root)
+        self.newSubtype = tk.StringVar(root)
+        self.typeChoser = ttk.OptionMenu(master, self.newType, *self.typeChoices)
+        self.subtypeChoser = ttk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
+        self.dateChoices = ['Select Date'] + self.dates[::-1] # reversed
+        self.commentDate = tk.StringVar(root)
+        #self.commentDate.set(self.dateChoices[0])
+        self.dateChoser = ttk.OptionMenu(master, self.commentDate, *self.dateChoices, command=self.updateComment)
+
+    ''' ------------------------------- other functions ------------------------------- '''
 
     def validateDate(self, new_text):
         if not new_text: # the field is being cleared
@@ -126,6 +138,7 @@ class MainApplication(ttk.Frame):
 
     def addData(self):
         self.add_Data.config(state='disabled')
+        self.add_Comment.config(state='disabled')
         self.write_Data.config(state='disabled')
         self.plot_Data.config(state='disabled')
         self.newName = ttk.Entry(self.master)
@@ -176,6 +189,8 @@ class MainApplication(ttk.Frame):
                 self.entries[self.newCat] = self.catVal[catagory]
                 self.add_Data.config(state='normal')
                 self.add_Data.grid(columnspan=len(self.catagories)+1)
+                self.add_Comment.config(state='normal')
+                self.add_Comment.grid(columnspan=len(self.catagories)+1)
                 self.write_Data.config(state='normal')
                 self.write_Data.grid(columnspan=len(self.catagories)+1)
                 self.plot_Data.config(state='normal')
@@ -195,12 +210,43 @@ class MainApplication(ttk.Frame):
             self.entries[self.newCat] = self.catVal[catagory]
             self.add_Data.config(state='normal')
             self.add_Data.grid(columnspan=len(self.catagories)+1)
+            self.add_Comment.config(state='normal')
+            self.add_Comment.grid(columnspan=len(self.catagories)+1)
             self.write_Data.config(state='normal')
             self.write_Data.grid(columnspan=len(self.catagories)+1)
             self.plot_Data.config(state='normal')
             self.plot_Data.grid(columnspan=len(self.catagories)+1)
             self.titleLabel.grid(columnspan=len(self.catagories)+1)
             self.endLabel.grid(columnspan=len(self.catagories)+1)
+
+    def addComment(self):
+        self.add_Data.config(state='disabled')
+        self.add_Comment.grid_forget()
+        self.write_Data.config(state='disabled')
+        self.plot_Data.config(state='disabled')
+        self.dateChoser.grid(row=4, column=0, sticky=tk.W+tk.E)
+        self.new_Comment = ttk.Entry(self.master)
+        self.new_Comment.grid(row=4, column=1, columnspan=len(self.catagories)-2, sticky=tk.W+tk.E)
+        self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
+        self.confirm_Comment.grid(row=4, column=len(self.catagories)-1, columnspan=1, sticky=tk.W+tk.E)
+
+    def updateComment(self, value):
+        ind = self.dates.index(value)
+        self.new_Comment.delete(0,tk.END)
+        if self.comments[ind]:
+            self.new_Comment.insert(tk.END, self.comments[ind])
+        else:
+            self.new_Comment.insert(tk.END, '')
+
+    def saveComment(self):
+        self.dateChoser.grid_forget()
+        self.new_Comment.grid_forget()
+        self.confirm_Comment.grid_forget()
+        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Data.config(state='normal')
+        self.write_Data.config(state='normal')
+        self.plot_Data.config(state='normal')
+        print('NOTHING HAPPEND!')
 
     def writeData(self):
         # Reorganize GUI #
@@ -209,6 +255,10 @@ class MainApplication(ttk.Frame):
             self.catVal[catagory].grid_forget()
         self.add_Data.grid_forget()
         self.write_Data.grid_forget()
+        self.add_Comment.grid_forget()
+        self.dateChoser.grid_forget()
+        self.new_Comment.grid_forget()
+        self.confirm_Comment.grid_forget()
         self.plot_Data.config(state='disabled')
 
         self.catConfirm = {}
@@ -240,7 +290,7 @@ class MainApplication(ttk.Frame):
         self.plot_Data.config(state='normal')
 
         # write data! #
-        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes, cur_data=self.cur_data)
+        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes,cur_data=self.cur_data)
 
     def plotData(self):
         plt.plotThedata(filename=self.filename)
