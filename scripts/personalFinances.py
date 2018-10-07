@@ -62,50 +62,72 @@ class MainApplication(ttk.Frame):
         self.catVal = {}
 
         ## Add GUI Elements ##
+        self.maxcol = 6
         self.titleLabel = ttk.Label(master, text='Finance Tracker')
         self.titleLabel.config(font=('Courier', 20, 'bold'))
-        self.titleLabel.grid(row=0, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.titleLabel.grid(row=0, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.endLabel = ttk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
-        self.endLabel.grid(row=100, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.endLabel.grid(row=100, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
+        self.newrow = 0 # for grid making
         self.val_numb = master.register(self.validateNumb) # we have to wrap the command
         self.val_date = master.register(self.validateDate) # we have to wrap the command
-        for col,cat in enumerate(self.catagories):
-            self.catName[cat] = ttk.Label(master, text=cat)
-            self.catName[cat].grid(row=1, column=col, sticky=tk.W+tk.E)
-            if col == 0:
+        for ind,cat in enumerate(self.catagories):
+            if ind == 0:
+                col = ind
+                self.catName[cat] = ttk.Label(master, text=cat)
+                self.catName[cat].grid(row=1, column=col, sticky=tk.W+tk.E+tk.S+tk.N)
                 self.data[cat] = self.ctime
                 self.catVal[cat] = ttk.Entry(master, validate="key", validatecommand=(self.val_date, '%P'))
                 self.catVal[cat].insert(tk.END, self.ctime)
                 self.catVal[cat].grid(row=2, column=col)
                 self.entries[cat] = self.catVal[cat]
             else:
+                if (ind+1*round(self.newrow/2))%self.maxcol == 0:
+                    self.newrow += 2
+                if self.newrow == 0:
+                    col = (ind+1*round(self.newrow/2)) - round(self.maxcol*self.newrow/2)
+                else:
+                    col = (ind+1*round(self.newrow/2)) - round(self.maxcol*self.newrow/2)
+                    if col == -1:
+                        col = self.maxcol - 1
+                self.catName[cat] = ttk.Label(master, text=cat)
+                self.catName[cat].grid(row=1+self.newrow, column=col, sticky=tk.W+tk.E+tk.S+tk.N)
                 self.data[cat] = 0
                 self.catVal[cat] = ttk.Entry(master, validate="key", validatecommand=(self.val_numb, '%P'))
                 self.catVal[cat].insert(tk.END, 0)
-                self.catVal[cat].grid(row=2, column=col)
+                self.catVal[cat].grid(row=2+self.newrow, column=col)
                 self.entries[cat] = self.catVal[cat]
 
+        # fill in blank spaces
+        if self.newrow:
+            for fillrow in range(3,self.newrow+2,2):
+                self.filler = ttk.Label(master, text='')
+                self.filler.grid(row=fillrow, column=0, rowspan=2, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
+            for fillcol in range(col+1,self.maxcol%len(self.catagories)):
+                self.filler = ttk.Label(master, text='')
+                self.filler.grid(row=fillrow, column=fillcol, rowspan=2, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
+
+        # add the buttons
         self.add_Data = ttk.Button(master, text='Add new catagory', command=lambda: self.addData())
-        self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Data.grid(row=63, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.add_Comment = ttk.Button(master, text='Add comment', command=lambda:self.addComment())
-        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Comment.grid(row=64, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.new_Comment = ttk.Entry(self.master)
 
         self.write_Data = ttk.Button(master, text='Write data to file', command=lambda: self.writeData())
-        self.write_Data.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.write_Data.grid(row=65, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.plot_Data = ttk.Button(master, text='Show plot', command=lambda: self.plotData())
-        self.plot_Data.grid(row=99, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.plot_Data.grid(row=99, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.new_Comment = ttk.Entry(self.master)
         self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
 
         ## Setup Type/Subtype Options ##
         self.typeChoices = np.unique(self.types).tolist()
-        self.typeChoices.append('New')
         self.typeChoices.remove('Date')
         self.subtypeChoices = np.unique(self.subtypes).tolist()
         self.subtypeChoices.append('New')
@@ -144,9 +166,9 @@ class MainApplication(ttk.Frame):
         self.write_Data.config(state='disabled')
         self.plot_Data.config(state='disabled')
         self.newName = ttk.Entry(self.master)
-        self.newName.grid(row=1, column=len(self.catagories)+1)
+        self.newName.grid(row=1, column=self.maxcol+1)
         self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('catagory',self.newName.get()))
-        self.confirm.grid(row=2, column=len(self.catagories)+1)
+        self.confirm.grid(row=2, column=self.maxcol+1)
 
     def confirmNew(self, stage, catagory):
         if stage == 'catagory':
@@ -154,30 +176,30 @@ class MainApplication(ttk.Frame):
             if self.newCat not in self.catagories:
                 self.newName.grid_forget()
                 self.catName[catagory] = ttk.Label(self.master, text=' ' + self.newCat + ' ')
-                self.catName[catagory].grid(row=1, column=len(self.catagories)+1, sticky=tk.W+tk.E)
+                self.catName[catagory].grid(row=1, column=self.maxcol+1, sticky=tk.W+tk.E+tk.S+tk.N)
                 self.confirm.grid_forget()
                 self.newType.set(self.typeChoices[0]) # set the default option
-                self.typeChoser.grid(row=2, column=len(self.catagories)+1)
+                self.typeChoser.grid(row=2, column=self.maxcol+1)
                 self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('type', self.newCat))
-                self.confirm.grid(row=3, column=len(self.catagories)+1)
+                self.confirm.grid(row=3, column=self.maxcol+1)
         elif stage == 'type':
             self.types.append(self.newType.get())
             self.typeChoser.grid_forget()
             self.confirm.grid_forget()
             self.typeLabel = ttk.Label(self.master, text=' ' + self.newType.get() + ' ')
-            self.typeLabel.grid(row=2, column=len(self.catagories)+1, sticky=tk.W+tk.E)
+            self.typeLabel.grid(row=2, column=self.maxcol+1, sticky=tk.W+tk.E+tk.S+tk.N)
             self.newSubtype.set(self.subtypeChoices[0]) # set the default option
-            self.subtypeChoser.grid(row=3, column=len(self.catagories)+1)
+            self.subtypeChoser.grid(row=3, column=self.maxcol+1)
             self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('subtype', self.newCat))
-            self.confirm.grid(row=4, column=len(self.catagories)+1)
+            self.confirm.grid(row=4, column=self.maxcol+1)
         elif stage == 'subtype':
             if self.newSubtype.get() == 'New':
                 self.subtypeChoser.grid_forget()
                 self.confirm.grid_forget()
                 self.newSubtypeEntry = ttk.Entry(self.master)
-                self.newSubtypeEntry.grid(row=3, column=len(self.catagories)+1)
+                self.newSubtypeEntry.grid(row=3, column=self.maxcol+1)
                 self.confirm = ttk.Button(self.master, text='Confim.', command=lambda: self.confirmNew('new_subtype', self.newCat))
-                self.confirm.grid(row=4, column=len(self.catagories)+1)
+                self.confirm.grid(row=4, column=self.maxcol+1)
             else:
                 self.data[self.newCat] = 0
                 self.catagories.append(self.newCat)
@@ -186,19 +208,10 @@ class MainApplication(ttk.Frame):
                 self.confirm.grid_forget()
                 self.typeLabel.grid_forget()
                 self.catVal[catagory] = ttk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'))
-                self.catVal[catagory].grid(row=2, column=len(self.catagories))
+                self.catVal[catagory].grid(row=2, column=self.maxcol+1)
                 self.catVal[catagory].insert(tk.END, 0)
                 self.entries[self.newCat] = self.catVal[catagory]
-                self.add_Data.config(state='normal')
-                self.add_Data.grid(columnspan=len(self.catagories)+1)
-                self.add_Comment.config(state='normal')
-                self.add_Comment.grid(columnspan=len(self.catagories)+1)
-                self.write_Data.config(state='normal')
-                self.write_Data.grid(columnspan=len(self.catagories)+1)
-                self.plot_Data.config(state='normal')
-                self.plot_Data.grid(columnspan=len(self.catagories)+1)
-                self.titleLabel.grid(columnspan=len(self.catagories)+1)
-                self.endLabel.grid(columnspan=len(self.catagories)+1)
+                self.gridNew()
         else: # if stage = new_subtype
             self.data[self.newCat] = 0
             self.catagories.append(self.newCat)
@@ -207,19 +220,31 @@ class MainApplication(ttk.Frame):
             self.confirm.grid_forget()
             self.typeLabel.grid_forget()
             self.catVal[catagory] = ttk.Entry(self.master, validate="key", validatecommand=(self.val_numb, '%P'))
-            self.catVal[catagory].grid(row=2, column=len(self.catagories))
+            self.catVal[catagory].grid(row=2, column=self.maxcol+1)
             self.catVal[catagory].insert(tk.END, 0)
             self.entries[self.newCat] = self.catVal[catagory]
+            self.gridNew()
+
+    def gridNew(self):
             self.add_Data.config(state='normal')
-            self.add_Data.grid(columnspan=len(self.catagories)+1)
             self.add_Comment.config(state='normal')
-            self.add_Comment.grid(columnspan=len(self.catagories)+1)
             self.write_Data.config(state='normal')
-            self.write_Data.grid(columnspan=len(self.catagories)+1)
             self.plot_Data.config(state='normal')
-            self.plot_Data.grid(columnspan=len(self.catagories)+1)
-            self.titleLabel.grid(columnspan=len(self.catagories)+1)
-            self.endLabel.grid(columnspan=len(self.catagories)+1)
+            newcol = (len(self.catagories)+1*round(self.newrow/2))%self.maxcol - 1
+
+            if newcol == 0: # we need a new row
+                self.newrow += 2
+                newcol = 1
+                self.filler = ttk.Label(self.master, text='')
+                self.filler.grid(row=1+self.newrow, column=0, rowspan=2, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
+                for fillcol in range(2,self.maxcol%len(self.catagories)):
+                        self.filler = ttk.Label(self.master, text='')
+                        self.filler.grid(row=1+self.newrow, column=fillcol, rowspan=2, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
+            elif newcol == -1:
+                newcol = self.maxcol - 1
+
+            self.catName[self.newCat].grid(row=1+self.newrow, column=newcol, sticky=tk.W+tk.E+tk.S+tk.N)
+            self.catVal[self.newCat].grid(row=2+self.newrow, column=newcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
     def addComment(self):
         self.commentDate.set(self.dateChoices[0])
@@ -227,10 +252,10 @@ class MainApplication(ttk.Frame):
         self.add_Comment.grid_forget()
         self.write_Data.config(state='disabled')
         self.plot_Data.config(state='disabled')
-        self.dateChoser.grid(row=4, column=0, sticky=tk.W+tk.E)
+        self.dateChoser.grid(row=64, column=0, sticky=tk.W+tk.E+tk.S+tk.N)
         self.new_Comment.delete(0,tk.END)
-        self.new_Comment.grid(row=4, column=1, columnspan=len(self.catagories)-2, sticky=tk.W+tk.E)
-        self.confirm_Comment.grid(row=4, column=len(self.catagories)-1, columnspan=1, sticky=tk.W+tk.E)
+        self.new_Comment.grid(row=64, column=1, columnspan=self.maxcol-2, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.confirm_Comment.grid(row=64, column=self.maxcol-1, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
 
     def updateComment(self, value):
         self.ind = self.dates.index(value)
@@ -248,13 +273,15 @@ class MainApplication(ttk.Frame):
         self.dateChoser.grid_forget()
         self.new_Comment.grid_forget()
         self.confirm_Comment.grid_forget()
-        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Comment.grid(row=64, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.add_Data.config(state='normal')
         self.write_Data.config(state='normal')
         self.plot_Data.config(state='normal')
 
     def writeData(self):
         # Reorganize GUI #
+        self.titleLabel.grid(columnspan=len(self.catagories))
+        self.endLabel.grid(columnspan=len(self.catagories))
         for col,catagory in enumerate(self.catagories):
             self.catName[catagory].grid_forget()
             self.catVal[catagory].grid_forget()
@@ -265,6 +292,7 @@ class MainApplication(ttk.Frame):
         self.new_Comment.grid_forget()
         self.confirm_Comment.grid_forget()
         self.plot_Data.config(state='disabled')
+        self.plot_Data.grid(columnspan=len(self.catagories), sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.catConfirm = {}
         self.typConfirm = {}
@@ -279,17 +307,17 @@ class MainApplication(ttk.Frame):
             self.dataList = list(self.data.values())
 
             self.catConfirm[cat] = ttk.Label(self.master, text=''.join('  ' + self.catagories[col] + '  '))
-            self.catConfirm[cat].grid(row=1, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.catConfirm[cat].grid(row=1, column=col, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
             self.typConfirm[cat] = ttk.Label(self.master, text=''.join(self.types[col]))
-            self.typConfirm[cat].grid(row=2, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.typConfirm[cat].grid(row=2, column=col, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
             self.subConfirm[cat] = ttk.Label(self.master, text=''.join(self.subtypes[col]))
-            self.subConfirm[cat].grid(row=3, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.subConfirm[cat].grid(row=3, column=col, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
             self.dataConfirm[cat] = ttk.Label(self.master, text=''.join(self.dataList[col]))
-            self.dataConfirm[cat].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E)
+            self.dataConfirm[cat].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
 
         # comments
         self.comLabel= ttk.Label(self.master, text='New comments:')
-        self.comLabel.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.comLabel.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E+tk.S+tk.N)
 
         numnewcom = 0
         self.comConfirm = {}
@@ -299,15 +327,15 @@ class MainApplication(ttk.Frame):
             if comment != oldcomment[i]:
                 self.comConfirmDate[numnewcom] = ttk.Label(self.master, text=self.dates[i])
                 self.comConfirm[numnewcom] = ttk.Label(self.master, text=comment)
-                self.comConfirmDate[numnewcom].grid(row=6+numnewcom, column=0, columnspan=1, sticky=tk.W+tk.E)
-                self.comConfirm[numnewcom].grid(row=6+numnewcom, column=1, columnspan=len(self.catagories)-1, sticky=tk.W+tk.E)
+                self.comConfirmDate[numnewcom].grid(row=6+numnewcom, column=0, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+                self.comConfirm[numnewcom].grid(row=6+numnewcom, column=1, columnspan=len(self.catagories)-1, sticky=tk.W+tk.E+tk.S+tk.N)
                 numnewcom += 1
 
         self.cancel = ttk.Button(self.master, text='CANCEL', command=lambda: self.cancelWrite())
-        self.cancel.grid(row=6+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.cancel.grid(row=6+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E+tk.S+tk.N)
 
         self.confirm = ttk.Button(self.master, text='Confim Data Entry!', command=lambda: self.confirmWrite())
-        self.confirm.grid(row=7+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.confirm.grid(row=7+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E+tk.S+tk.N)
 
     def confirmWrite(self):
         self.confirm.grid_forget()
@@ -324,16 +352,30 @@ class MainApplication(ttk.Frame):
         for key in self.comConfirm.keys():
             self.comConfirm[key].grid_forget()
             self.comConfirmDate[key].grid_forget()
-        for col,cat in enumerate(self.catagories):
+        self.newrow = 0 # reset for gridding
+        for ind,cat in enumerate(self.catagories):
             self.catConfirm[cat].grid_forget()
             self.typConfirm[cat].grid_forget()
             self.subConfirm[cat].grid_forget()
             self.dataConfirm[cat].grid_forget()
-            self.catName[cat].grid(row=1, column=col, sticky=tk.W+tk.E)
-            self.catVal[cat].grid(row=2, column=col)
-        self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
-        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
-        self.write_Data.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+            if ind == 0:
+                col = ind
+            else:
+                if (ind+1*round(self.newrow/2))%self.maxcol == 0:
+                    self.newrow += 2
+                if self.newrow == 0:
+                    col = (ind+1*round(self.newrow/2)) - round(self.maxcol*self.newrow/2)
+                else:
+                    col = (ind+1*round(self.newrow/2)) - round(self.maxcol*self.newrow/2)
+                    if col == -1:
+                        col = self.maxcol - 1
+            self.catName[cat].grid(row=1+self.newrow, column=col, sticky=tk.W+tk.E+tk.S+tk.N)
+            self.catVal[cat].grid(row=2+self.newrow, column=col)
+        self.titleLabel.grid(columnspan=self.maxcol)
+        self.endLabel.grid(columnspan=self.maxcol)
+        self.add_Data.grid(row=63, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.add_Comment.grid(row=64, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.write_Data.grid(row=65, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.plot_Data.config(state='normal')
 
     def plotData(self):
