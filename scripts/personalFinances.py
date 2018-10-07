@@ -153,7 +153,7 @@ class MainApplication(ttk.Frame):
 
     def validateNumb(self, new_text):
         if not new_text: # the field is being cleared
-            return False
+            return True
         try:
             float(new_text) > 0
             return True
@@ -303,7 +303,10 @@ class MainApplication(ttk.Frame):
             if col == 0: # Make data list #
                 self.data[cat] = self.entries[cat].get()
             else:
-                self.data[cat] = str(round(float(self.entries[cat].get()),2))
+                try:
+                    self.data[cat] = str(round(float(self.entries[cat].get()),2))
+                except ValueError:
+                    self.data[cat] = '0.0' 
             self.dataList = list(self.data.values())
 
             self.catConfirm[cat] = ttk.Label(self.master, text=''.join('  ' + self.catagories[col] + '  '))
