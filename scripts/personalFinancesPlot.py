@@ -21,6 +21,7 @@ def plotThedata(filename):
     time = [datetime.strptime(date, '%Y-%m-%d') for date in data['data']['Date']]
     types = [data['type'][cat] for cat in data['data'].keys() if cat != 'Date']
     subtypes = [data['subtype'][cat] for cat in data['data'].keys() if cat != 'Date']
+    comments = data['comment']
 
     totals = {}
     totals['types'] = {}
@@ -72,7 +73,7 @@ def plotThedata(filename):
     colors = [colormap(i) for i in np.linspace(0, 1, 9)]
     for i,subtype in enumerate(totals['subtypes'].keys()): # plot subtypes
         plt.plot(time, totals['subtypes'][subtype], label=subtype, linewidth=2, linestyle='--', color=colors[i])
-    plt.plot(time, totals['total'], linewidth=3, color='k') # to plot on top
+    line, = ax1.plot(time, totals['total'], linewidth=3, color='k') # to plot on top; for interactive
 
     plt.xlim(time[0])
     plt.ylim(0, 1.1*max(totals['total']))
@@ -121,4 +122,24 @@ def plotThedata(filename):
     #plt.subplots_adjust(left=0.15, bottom=None, right=0.95, top=None, hspace=0.4, wspace=0.40)
     plt.tight_layout()
     plt.savefig(path + '\\PersonalFinances.png', bbox_inches='tight', dpi = 500)
+
+    ## THE INTERACTIVE STUFF ##
+    def onclick(event):
+        for txt in ax1.texts: # clean up
+            txt.remove()
+        if event.inaxes!=line.axes: return # make sure you clicked in the main plot
+        ind = np.argmin([abs(mdates.date2num(t)-event.xdata) for t in time])
+        comment = comments[ind]
+        maxwidth = 33
+        try:
+            if len(comment) > maxwidth: # make it fit on the plot
+                comment = '\n  '.join(comment[i:i+maxwidth] for i in np.arange(0,len(comment), maxwidth))
+        except TypeError: # object of type 'NoneType' has no len()
+            comment = 'No comment.'
+        textvar = ax1.text(0.3,0.98,'{}: {}'.format(time[ind].strftime('%Y-%m-%d'),comment), ha='left',va='top', transform=ax1.transAxes)
+        plt.draw()
+
+
+    fig.canvas.mpl_connect('button_press_event', onclick)
+
     plt.show()
