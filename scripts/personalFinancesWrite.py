@@ -8,7 +8,7 @@ import os
 import json
 import copy
 
-def writeDataToFile(filename,data,catagories,types,subtypes,cur_data):
+def writeDataToFile(filename,data,catagories,types,subtypes,comments,cur_data):
     path = os.path.dirname(os.path.dirname(__file__))
     writeFile = open(path + '\\' + filename, 'r')
     new_data = copy.deepcopy(cur_data) # So that you don't overwrite stuff
@@ -35,6 +35,8 @@ def writeDataToFile(filename,data,catagories,types,subtypes,cur_data):
             new_data['data'][cat] = [None] * (len(new_data['data']['Date']) - 1)
             new_data['data'][cat].append(float(newcatdata[i]))
             print('Data for %s added!' % cat)
+
+    new_data['comment'] = comments
 
     with open(filename, "w") as write_file:
         json.dump(new_data, write_file)

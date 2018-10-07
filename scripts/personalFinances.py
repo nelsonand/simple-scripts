@@ -66,7 +66,7 @@ class MainApplication(ttk.Frame):
         self.titleLabel.config(font=('Courier', 20, 'bold'))
         self.titleLabel.grid(row=0, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
         self.endLabel = ttk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
-        self.endLabel.grid(row=7, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.endLabel.grid(row=100, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
         self.val_numb = master.register(self.validateNumb) # we have to wrap the command
         self.val_date = master.register(self.validateDate) # we have to wrap the command
@@ -100,6 +100,9 @@ class MainApplication(ttk.Frame):
         self.plot_Data = ttk.Button(master, text='Show plot', command=lambda: self.plotData())
         self.plot_Data.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
+        self.new_Comment = ttk.Entry(self.master)
+        self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
+
         ## Setup Type/Subtype Options ##
         self.typeChoices = np.unique(self.types).tolist()
         self.typeChoices.append('New')
@@ -113,7 +116,6 @@ class MainApplication(ttk.Frame):
         self.subtypeChoser = ttk.OptionMenu(master, self.newSubtype, *self.subtypeChoices)
         self.dateChoices = ['Select Date'] + self.dates[::-1] # reversed
         self.commentDate = tk.StringVar(root)
-        #self.commentDate.set(self.dateChoices[0])
         self.dateChoser = ttk.OptionMenu(master, self.commentDate, *self.dateChoices, command=self.updateComment)
 
     ''' ------------------------------- other functions ------------------------------- '''
@@ -220,25 +222,29 @@ class MainApplication(ttk.Frame):
             self.endLabel.grid(columnspan=len(self.catagories)+1)
 
     def addComment(self):
+        self.commentDate.set(self.dateChoices[0])
         self.add_Data.config(state='disabled')
         self.add_Comment.grid_forget()
         self.write_Data.config(state='disabled')
         self.plot_Data.config(state='disabled')
         self.dateChoser.grid(row=4, column=0, sticky=tk.W+tk.E)
-        self.new_Comment = ttk.Entry(self.master)
+        self.new_Comment.delete(0,tk.END)
         self.new_Comment.grid(row=4, column=1, columnspan=len(self.catagories)-2, sticky=tk.W+tk.E)
-        self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
         self.confirm_Comment.grid(row=4, column=len(self.catagories)-1, columnspan=1, sticky=tk.W+tk.E)
 
     def updateComment(self, value):
-        ind = self.dates.index(value)
+        self.ind = self.dates.index(value)
         self.new_Comment.delete(0,tk.END)
-        if self.comments[ind]:
-            self.new_Comment.insert(tk.END, self.comments[ind])
+        if self.comments[self.ind]:
+            self.new_Comment.insert(tk.END, self.comments[self.ind])
         else:
             self.new_Comment.insert(tk.END, '')
 
     def saveComment(self):
+        try: # necessary if no date is selected
+            self.comments[self.ind] = self.new_Comment.get()
+        except AttributeError:
+            pass
         self.dateChoser.grid_forget()
         self.new_Comment.grid_forget()
         self.confirm_Comment.grid_forget()
@@ -246,7 +252,6 @@ class MainApplication(ttk.Frame):
         self.add_Data.config(state='normal')
         self.write_Data.config(state='normal')
         self.plot_Data.config(state='normal')
-        print('NOTHING HAPPEND!')
 
     def writeData(self):
         # Reorganize GUI #
@@ -282,15 +287,31 @@ class MainApplication(ttk.Frame):
             self.dataConfirm[cat] = ttk.Label(self.master, text=''.join(self.dataList[col]))
             self.dataConfirm[cat].grid(row=4, column=col, columnspan=1, sticky=tk.W+tk.E)
 
+        # comments
+        self.comLabel= ttk.Label(self.master, text='New comments:')
+        self.comLabel.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+
+        numnewcom = 0
+        self.comConfirm = {}
+        self.comConfirmDate = {}
+        oldcomment = self.cur_data['comment'] + [None]
+        for i,comment in enumerate(self.comments):
+            if comment != oldcomment[i]:
+                self.comConfirmDate[numnewcom] = ttk.Label(self.master, text=self.dates[i])
+                self.comConfirm[numnewcom] = ttk.Label(self.master, text=comment)
+                self.comConfirmDate[numnewcom].grid(row=6+numnewcom, column=0, columnspan=1, sticky=tk.W+tk.E)
+                self.comConfirm[numnewcom].grid(row=6+numnewcom, column=1, columnspan=len(self.catagories)-1, sticky=tk.W+tk.E)
+                numnewcom += 1
+
         self.confirm = ttk.Button(self.master, text='Confim Data Entry.', command=lambda: self.confirmWrite())
-        self.confirm.grid(row=5,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.confirm.grid(row=6+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
     def confirmWrite(self):
         self.confirm.grid_forget()
         self.plot_Data.config(state='normal')
 
         # write data! #
-        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes,cur_data=self.cur_data)
+        wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes,comments=self.comments,cur_data=self.cur_data)
 
     def plotData(self):
         plt.plotThedata(filename=self.filename)
