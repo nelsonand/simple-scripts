@@ -98,7 +98,7 @@ class MainApplication(ttk.Frame):
         self.write_Data.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
         self.plot_Data = ttk.Button(master, text='Show plot', command=lambda: self.plotData())
-        self.plot_Data.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.plot_Data.grid(row=99, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
         self.new_Comment = ttk.Entry(self.master)
         self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
@@ -289,7 +289,7 @@ class MainApplication(ttk.Frame):
 
         # comments
         self.comLabel= ttk.Label(self.master, text='New comments:')
-        self.comLabel.grid(row=6, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.comLabel.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
         numnewcom = 0
         self.comConfirm = {}
@@ -303,15 +303,38 @@ class MainApplication(ttk.Frame):
                 self.comConfirm[numnewcom].grid(row=6+numnewcom, column=1, columnspan=len(self.catagories)-1, sticky=tk.W+tk.E)
                 numnewcom += 1
 
-        self.confirm = ttk.Button(self.master, text='Confim Data Entry.', command=lambda: self.confirmWrite())
-        self.confirm.grid(row=6+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.cancel = ttk.Button(self.master, text='CANCEL', command=lambda: self.cancelWrite())
+        self.cancel.grid(row=6+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
+
+        self.confirm = ttk.Button(self.master, text='Confim Data Entry!', command=lambda: self.confirmWrite())
+        self.confirm.grid(row=7+numnewcom,column=0,columnspan=len(self.catagories), sticky=tk.W+tk.E)
 
     def confirmWrite(self):
         self.confirm.grid_forget()
+        self.cancel.grid_forget()
         self.plot_Data.config(state='normal')
 
         # write data! #
         wrt.writeDataToFile(filename=self.filename,data=self.dataList,catagories=self.catagories,types=self.types,subtypes=self.subtypes,comments=self.comments,cur_data=self.cur_data)
+
+    def cancelWrite(self):
+        self.confirm.grid_forget()
+        self.cancel.grid_forget()
+        self.comLabel.grid_forget()
+        for key in self.comConfirm.keys():
+            self.comConfirm[key].grid_forget()
+            self.comConfirmDate[key].grid_forget()
+        for col,cat in enumerate(self.catagories):
+            self.catConfirm[cat].grid_forget()
+            self.typConfirm[cat].grid_forget()
+            self.subConfirm[cat].grid_forget()
+            self.dataConfirm[cat].grid_forget()
+            self.catName[cat].grid(row=1, column=col, sticky=tk.W+tk.E)
+            self.catVal[cat].grid(row=2, column=col)
+        self.add_Data.grid(row=3, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.add_Comment.grid(row=4, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.write_Data.grid(row=5, column=0, columnspan=len(self.catagories), sticky=tk.W+tk.E)
+        self.plot_Data.config(state='normal')
 
     def plotData(self):
         plt.plotThedata(filename=self.filename)
