@@ -306,7 +306,7 @@ class MainApplication(ttk.Frame):
                 try:
                     self.data[cat] = str(round(float(self.entries[cat].get()),2))
                 except ValueError:
-                    self.data[cat] = '0.0' 
+                    self.data[cat] = '0.0'
             self.dataList = list(self.data.values())
 
             self.catConfirm[cat] = ttk.Label(self.master, text=''.join('  ' + self.catagories[col] + '  '))
@@ -380,6 +380,7 @@ class MainApplication(ttk.Frame):
         self.add_Comment.grid(row=64, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.write_Data.grid(row=65, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.plot_Data.config(state='normal')
+        self.plot_Data.grid(columnspan=self.maxcol)
 
     def plotData(self):
         plt.plotThedata(filename=self.filename)
