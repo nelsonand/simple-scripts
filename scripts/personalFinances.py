@@ -25,7 +25,7 @@ class MainApplication(ttk.Frame):
         os.chdir(self.path)
 
         ## Initiate Datafile ##
-        self.filename = 'data\personalFinancesData_test.json'
+        self.filename = 'data\personalFinancesData.json'
         try: # Simply try to open datafile. Close it and continue.
             f = open(self.filename); f.close()
         except FileNotFoundError: # Initialize data file

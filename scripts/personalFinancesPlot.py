@@ -116,7 +116,7 @@ def plotThedata(filename):
     plt.bar(time[-6:], changePos[-6:], 25, alpha=0.5, color='g')
     plt.bar(time[-6:], changeNeg[-6:], 25, alpha=0.5, color='r')
     plt.axhline(y=0, linestyle='-', linewidth=0.5, color='k')
-    ax4.set_ylim(0,1.2*max(changePos[-6:]))
+    ax4.set_ylim(1.2*min(changeNeg[-6:]),1.2*max(changePos[-6:]))
     ax4.get_yaxis().set_visible(False)
 
     #plt.subplots_adjust(left=0.15, bottom=None, right=0.95, top=None, hspace=0.4, wspace=0.40)
