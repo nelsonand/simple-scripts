@@ -34,9 +34,14 @@ def plotThedata(filename):
         totals['subtypes'][subtype] = [sum(x) for x in zip(*sel)]
     totals['total'] = [sum(x) for x in zip(*[data['data'][cat] for cat in data['data'].keys() if cat != 'Date'])]
 
-    change = [x - y for x,y in zip(totals['total'][1:], totals['total'][:-1])]
-    changePos = [x if x > 0 else 0 for x in change]
-    changeNeg = [x if x <= 0 else 0 for x in change]
+    if len(time) > 1:
+        change = [x - y for x,y in zip(totals['total'][1:], totals['total'][:-1])]
+        changePos = [x if x > 0 else 0 for x in change]
+        changeNeg = [x if x <= 0 else 0 for x in change]
+    else:
+        change = totals['total'][0]
+        changePos = change
+        changeNeg = 0
 
     '''
     ################################################################################
@@ -105,18 +110,34 @@ def plotThedata(filename):
 
     plt.xlabel('Time')
     plt.ylabel('Savings (Dollars)')
-    plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][-6]), ha='left', va='center', transform=ax3.transAxes)
-    ax3.set_ylim(0.9*min(totals['total'][-6:]),1.1*max(totals['total'][-6:]))
+    try:
+        plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][-6]), ha='left', va='center', transform=ax3.transAxes)
+        ax3.set_ylim(0.9*min(totals['total'][-6:]),1.1*max(totals['total'][-6:]))
+    except IndexError: # not enough dates yet
+        if len(time) > 1:
+            plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][0]), ha='left', va='center', transform=ax3.transAxes)
+        else:
+            plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][0]), ha='left', va='center', transform=ax3.transAxes)
+        ax3.set_ylim(0.9*min(totals['total']),1.1*max(totals['total']))
     ax3.set_title('Last Six Months', fontweight='bold')
 
     ax4 = ax3.twinx()
     ax4.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
     ax4.xaxis.set_major_locator(mdates.MonthLocator())
 
-    plt.bar(time[-6:], changePos[-6:], 25, alpha=0.5, color='g')
-    plt.bar(time[-6:], changeNeg[-6:], 25, alpha=0.5, color='r')
+    try:
+        plt.bar(time[-6:], changePos[-6:], 25, alpha=0.5, color='g')
+        plt.bar(time[-6:], changeNeg[-6:], 25, alpha=0.5, color='r')
+        ax4.set_ylim(1.2*min(changeNeg[-6:]),1.2*max(changePos[-6:]))
+    except IndexError: # not enough dates yet
+        plt.bar(time, changePos, 25, alpha=0.5, color='g')
+        plt.bar(time, changeNeg, 25, alpha=0.5, color='r')
+        ax4.set_ylim(1.2*min(changeNeg),1.2*max(changePos))
+    except TypeError: # not enough dates yet
+        plt.bar(time, changePos, 25, alpha=0.5, color='g')
+        plt.bar(time, changeNeg, 25, alpha=0.5, color='r')
+        ax4.set_ylim(0,1.2*changePos)
     plt.axhline(y=0, linestyle='-', linewidth=0.5, color='k')
-    ax4.set_ylim(1.2*min(changeNeg[-6:]),1.2*max(changePos[-6:]))
     ax4.get_yaxis().set_visible(False)
 
     #plt.subplots_adjust(left=0.15, bottom=None, right=0.95, top=None, hspace=0.4, wspace=0.40)
