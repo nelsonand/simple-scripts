@@ -4,7 +4,7 @@ import copy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def plotThedata(filename):
     '''
@@ -34,14 +34,19 @@ def plotThedata(filename):
         totals['subtypes'][subtype] = [sum(x) for x in zip(*sel)]
     totals['total'] = [sum(x) for x in zip(*[data['data'][cat] for cat in data['data'].keys() if cat != 'Date'])]
 
-    if len(time) > 1:
-        change = [x - y for x,y in zip(totals['total'][1:], totals['total'][:-1])]
-        changePos = [x if x > 0 else 0 for x in change]
-        changeNeg = [x if x <= 0 else 0 for x in change]
-    else:
-        change = totals['total'][0]
-        changePos = change
-        changeNeg = 0
+    if len(time) < 7: # not enough times yet
+        for type in np.unique(types).tolist():
+            totals['types'][type] = [0]*(7-len(time)) + totals['types'][type] # buffer with zeros
+        for subtype in np.unique(subtypes).tolist():
+            totals['subtypes'][subtype] = [0]*(7-len(time)) + totals['subtypes'][subtype] # buffer with zeros
+        totals['total'] = [0]*(7-len(time)) + totals['total'] # buffer with zeros
+        comments = [None]*(7-len(time)) + comments # buffer with zeros
+        while len(time) < 7: # change time last
+            time = [time[0]-timedelta(days=1)] + time
+
+    change = [x - y for x,y in zip(totals['total'][1:], totals['total'][:-1])]
+    changePos = [x if x > 0 else 0 for x in change]
+    changeNeg = [x if x <= 0 else 0 for x in change]
 
     '''
     ################################################################################
@@ -92,8 +97,8 @@ def plotThedata(filename):
     ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
     ax2.xaxis.set_major_locator(mdates.YearLocator())
 
-    plt.bar(time[1:], changePos, 25, color='g')
-    plt.bar(time[1:], changeNeg, 25, color='r')
+    plt.bar(time[1:], changePos, (mdates.date2num(time[-1])-mdates.date2num(time[1]))/len(changePos), color='g')
+    plt.bar(time[1:], changeNeg, (mdates.date2num(time[-1])-mdates.date2num(time[1]))/len(changePos), color='r')
     plt.axhline(y=0, linestyle='-', linewidth=0.5, color='k')
 
     plt.xlim(time[0])
@@ -110,33 +115,17 @@ def plotThedata(filename):
 
     plt.xlabel('Time')
     plt.ylabel('Savings (Dollars)')
-    try:
-        plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][-6]), ha='left', va='center', transform=ax3.transAxes)
-        ax3.set_ylim(0.9*min(totals['total'][-6:]),1.1*max(totals['total'][-6:]))
-    except IndexError: # not enough dates yet
-        if len(time) > 1:
-            plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][0]), ha='left', va='center', transform=ax3.transAxes)
-        else:
-            plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][0]), ha='left', va='center', transform=ax3.transAxes)
-        ax3.set_ylim(0.9*min(totals['total']),1.1*max(totals['total']))
+    plt.text(0.05, 0.9, 'Net Change = $' + '%.2f'%float(totals['total'][-1]-totals['total'][-6]), ha='left', va='center', transform=ax3.transAxes)
+    ax3.set_ylim(0.7*min(totals['total'][-6:]),1.3*max(totals['total'][-6:]))
     ax3.set_title('Last Six Months', fontweight='bold')
 
     ax4 = ax3.twinx()
     ax4.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
     ax4.xaxis.set_major_locator(mdates.MonthLocator())
 
-    try:
-        plt.bar(time[-6:], changePos[-6:], 25, alpha=0.5, color='g')
-        plt.bar(time[-6:], changeNeg[-6:], 25, alpha=0.5, color='r')
-        ax4.set_ylim(1.2*min(changeNeg[-6:]),1.2*max(changePos[-6:]))
-    except IndexError: # not enough dates yet
-        plt.bar(time, changePos, 25, alpha=0.5, color='g')
-        plt.bar(time, changeNeg, 25, alpha=0.5, color='r')
-        ax4.set_ylim(1.2*min(changeNeg),1.2*max(changePos))
-    except TypeError: # not enough dates yet
-        plt.bar(time, changePos, 25, alpha=0.5, color='g')
-        plt.bar(time, changeNeg, 25, alpha=0.5, color='r')
-        ax4.set_ylim(0,1.2*changePos)
+    plt.bar(time[-6:], changePos[-6:], (mdates.date2num(time[-1])-mdates.date2num(time[-6]))/6, alpha=0.5, color='g')
+    plt.bar(time[-6:], changeNeg[-6:], (mdates.date2num(time[-1])-mdates.date2num(time[-6]))/6, alpha=0.5, color='r')
+    ax4.set_ylim(1.3*min(changeNeg[-6:]),1.3*max(changePos[-6:]))
     plt.axhline(y=0, linestyle='-', linewidth=0.5, color='k')
     ax4.get_yaxis().set_visible(False)
 
@@ -156,7 +145,7 @@ def plotThedata(filename):
             if len(comment) > maxwidth: # make it fit on the plot
                 comment = '\n  '.join(comment[i:i+maxwidth] for i in np.arange(0,len(comment), maxwidth))
         except TypeError: # object of type 'NoneType' has no len()
-            comment = 'No comment.'
+            comment = 'No comment...'
         textvar = ax1.text(0.3,0.98,'{}: {}'.format(time[ind].strftime('%Y-%m-%d'),comment), ha='left',va='top', transform=ax1.transAxes)
         plt.draw()
 

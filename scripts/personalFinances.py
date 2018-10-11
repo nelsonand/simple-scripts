@@ -29,7 +29,7 @@ class MainApplication(ttk.Frame):
         self.filler.grid(row=0, column=0, rowspan=100, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
 
         ## Initiate Datafile ##
-        self.filename = 'data\personalFinancesData_test.json'
+        self.filename = 'data\personalFinancesData.json'
         try: # Simply try to open datafile. Close it and continue.
             f = open(self.filename); f.close()
         except FileNotFoundError: # Initialize data file
@@ -121,11 +121,7 @@ class MainApplication(ttk.Frame):
         self.confirm_Comment = ttk.Button(self.master, text='Save comment', command=lambda: self.saveComment())
 
         ## Setup Type/Subtype Options ##
-        self.typeChoices = np.unique(self.types).tolist()
-        self.typeChoices.remove('Date')
-        if not self.typeChoices: # The file was just initialized
-            self.typeChoices.append('Solid')
-            self.typeChoices.append('Liquid')
+        self.typeChoices = ['Solid','Liquid']
         self.subtypeChoices = np.unique(self.subtypes).tolist()
         self.subtypeChoices.append('New')
         self.subtypeChoices.remove('Date')
