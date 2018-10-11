@@ -134,21 +134,28 @@ def plotThedata(filename):
     plt.savefig(path + '\\PersonalFinances.png', bbox_inches='tight', dpi = 500)
 
     ## THE INTERACTIVE STUFF ##
+    def replace_right(source, target, replacement, replacements=None):
+        return replacement.join(source.rsplit(target, replacements))
+
     def onclick(event):
         for txt in ax1.texts: # clean up
             txt.remove()
         if event.inaxes!=line.axes: return # make sure you clicked in the main plot
         ind = np.argmin([abs(mdates.date2num(t)-event.xdata) for t in time])
-        comment = comments[ind]
-        maxwidth = 33
-        try:
-            if len(comment) > maxwidth: # make it fit on the plot
-                comment = '\n  '.join(comment[i:i+maxwidth] for i in np.arange(0,len(comment), maxwidth))
+        comment = ''
+        maxind = 33
+        try: # cut the string at spaces so that it fits on the graph
+            s2 = comments[ind]
+            while len(s2) > maxind:
+                s1 = replace_right(s2[:maxind],' ','\n',1)
+                cut = s1.index('\n') + 1
+                comment += s1[:cut]
+                s2 = '  ' + s2[cut:]
+            comment += s2
         except TypeError: # object of type 'NoneType' has no len()
-            comment = 'No comment...'
+            comment += 'No comment...'
         textvar = ax1.text(0.3,0.98,'{}: {}'.format(time[ind].strftime('%Y-%m-%d'),comment), ha='left',va='top', transform=ax1.transAxes)
         plt.draw()
-
 
     fig.canvas.mpl_connect('button_press_event', onclick)
 
