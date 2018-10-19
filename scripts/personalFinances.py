@@ -19,6 +19,7 @@ class MainApplication(ttk.Frame):
     def __init__(self, master, *args, **kwargs):
         ttk.Frame.__init__(self, master, *args, **kwargs)
         self.master = master
+        master.resizable(False,False)
         master.title("Oak's Finance Tracker")
         self.path = os.path.dirname(os.path.dirname(__file__))
         self.ctime = datetime.now().strftime('%Y-%m-%d')
@@ -66,7 +67,7 @@ class MainApplication(ttk.Frame):
         self.catVal = {}
 
         ## Add GUI Elements ##
-        self.titleLabel = ttk.Label(master, text='Finance Tracker')
+        self.titleLabel = ttk.Label(master, text='Finance Tracker',width=10*self.maxcol)
         self.titleLabel.config(font=('Courier', 20, 'bold'))
         self.titleLabel.grid(row=0, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
         self.endLabel = ttk.Label(master, text='Editing ' + self.filename + ' on ' + self.ctime)
