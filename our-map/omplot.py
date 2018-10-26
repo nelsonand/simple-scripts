@@ -7,7 +7,7 @@ def makeamap(filename):
     import numpy as np
     import matplotlib.pyplot as plt
     from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-    from matplotlib._png import read_png
+    import matplotlib.image as mpimg
     from datetime import datetime
     import copy
     import json
@@ -46,7 +46,7 @@ def makeamap(filename):
     map.drawmapboundary()
 
     # create the annotations box
-    pic = read_png('pics\PersonalFinances.png')
+    pic = mpimg.imread('pics\\profpic.png')
     im = OffsetImage(pic, zoom=.05)
     xybox=(50., 50.)
     ab = AnnotationBbox(im, (0,0), xybox=xybox, xycoords='data',
@@ -76,7 +76,7 @@ def makeamap(filename):
                 ab.xy = (x[ind], y[ind])
                 # set the image corresponding to that point
                 dir = dirs[ind]
-                im.set_data(read_png(dir))
+                im.set_data(mpimg.imread(dir))
         else:
             #if you didn't click on a data point
             ab.set_visible(False)

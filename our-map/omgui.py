@@ -35,36 +35,23 @@ class MainApplication(ttk.Frame):
             f = open(self.filename); f.close()
         except FileNotFoundError: # Initialize data file
             print('Building %s...' % self.filename)
-            start_data = {'name1':{
+            start_data = {'First pic':{
                                     'day':datetime.now().strftime('%Y-%m-%d'),
-                                    'lat':57.0799,
-                                    'lon':-135.3318,
-                                    'dir':'pics\LOVEBar2.png',
+                                    'lat':0,
+                                    'lon':0,
+                                    'dir':'pics\\test',
                                     'com':'This is a comment.',
                                   }
                          }
             with open(self.filename, "w") as write_file:
                 json.dump(start_data, write_file)
 
-        ## Get Data ##
+        ## Get Data ## TODO: Think about moving this inside the setup_variables function
         with open(self.filename, "r") as read_file:
             old_data = json.load(read_file)
 
-        ## Setup Variables ##
         self.data = copy.deepcopy(old_data) # just in case
-        self.nams = []
-        self.days = []
-        self.lons = []
-        self.lats = []
-        self.dirs = []
-        self.coms = []
-        for name in self.data.keys():
-            self.nams.append(name)
-            self.days.append(self.data[name]['day'])
-            self.lons.append(self.data[name]['lon'])
-            self.lats.append(self.data[name]['lat'])
-            self.dirs.append(self.data[name]['dir'])
-            self.coms.append(self.data[name]['com'])
+        self.setup_variables() # setup the variables!
 
         ## Add GUI Elements ##
         self.titleLabel = ttk.Label(master, text='Our Map', width=50) # this width sets the starting GUI width
@@ -108,8 +95,23 @@ class MainApplication(ttk.Frame):
         self.editName_Choser = ttk.OptionMenu(self.master, self.editName, *self.editName_Choices, command=self.update_editName)
 
     ## The function definitions ##
+    def setup_variables(self): # refresh the internal GUI variables
+        self.nams = []
+        self.days = []
+        self.lons = []
+        self.lats = []
+        self.dirs = []
+        self.coms = []
+        for name in self.data.keys():
+            self.nams.append(name)
+            self.days.append(self.data[name]['day'])
+            self.lons.append(self.data[name]['lon'])
+            self.lats.append(self.data[name]['lat'])
+            self.dirs.append(self.data[name]['dir'])
+            self.coms.append(self.data[name]['com'])
+
     def validateName(self, new_text): # Name valification TODO
-        return True
+            return True
 
     def validateDate(self, new_text): # date valification
         if not new_text: # the field is being cleared
@@ -133,18 +135,28 @@ class MainApplication(ttk.Frame):
                 return False
 
     def workData(self, type): # set up the input GUI
-        if type == 'add':
+        if type == 'add': # new data
             baserow = 50
+            self.nameIsNew = 1 # so that you can check if it already exists when confirming
             self.namEntry.grid(row=baserow+2, column=0, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+
+            # populate the entries with suggestions
+            self.namEntry.insert(tk.END, 'Enter a name.')
+            self.dayEntry.insert(tk.END, datetime.now().strftime('%Y-%m-%d'))
+            self.latEntry.insert(tk.END, '0')
+            self.lonEntry.insert(tk.END, '0')
+            self.dirEntry.insert(tk.END, 'pics\\(filename)')
+            self.comEntry.insert(tk.END, 'Descriptive comment!')
         elif type == 'edit': # a few more commands for selecting a date to edit
             baserow = 60
+            self.nameIsNew = 0
             self.editName = tk.StringVar(root)
             self.editName_Choices = ['Select Entry'] + self.nams[::-1] # reversed
             self.editName_Choser = ttk.OptionMenu(self.master, self.editName, *self.editName_Choices, command=self.update_editName)
             self.editName_Choser.grid(row=baserow+2, column=0, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
             self.dayEntry.config(state='disabled')
-            self.lonEntry.config(state='disabled')
             self.latEntry.config(state='disabled')
+            self.lonEntry.config(state='disabled')
             self.dirEntry.config(state='disabled')
             self.comEntry.config(state='disabled')
             self.work_Data_confirm.config(state='disabled')
@@ -154,80 +166,104 @@ class MainApplication(ttk.Frame):
         self.plot_Data.config(state='disabled')
         self.namLabel.grid(row=baserow+1, column=0, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.dayLabel.grid(row=baserow+1, column=1, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
-        self.lonLabel.grid(row=baserow+1, column=2, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
-        self.latLabel.grid(row=baserow+1, column=3, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.latLabel.grid(row=baserow+1, column=2, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.lonLabel.grid(row=baserow+1, column=3, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.dirLabel.grid(row=baserow+1, column=4, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.comLabel.grid(row=baserow+1, column=5, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.dayEntry.grid(row=baserow+2, column=1, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
-        self.lonEntry.grid(row=baserow+2, column=2, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
-        self.latEntry.grid(row=baserow+2, column=3, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.latEntry.grid(row=baserow+2, column=2, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
+        self.lonEntry.grid(row=baserow+2, column=3, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.dirEntry.grid(row=baserow+2, column=4, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.comEntry.grid(row=baserow+2, column=5, columnspan=1, sticky=tk.W+tk.E+tk.S+tk.N)
         self.work_Data_confirm.grid(row=baserow+3, column=0, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N)
 
-        self.namEntry.insert(tk.END, 'TEST')
-        self.dayEntry.insert(tk.END, '10-10-10')
-        self.lonEntry.insert(tk.END, '1')
-        self.latEntry.insert(tk.END, '0')
-        self.dirEntry.insert(tk.END, 'test')
-        self.comEntry.insert(tk.END, 'test')
-
     def workData_confirm(self): # save new data and clean up GUI
-        # clean up GUI
-        self.add_Data.config(state='normal')
-        self.edit_Data.config(state='normal')
-        self.plot_Data.config(state='normal')
-        self.namLabel.grid_forget()
-        self.dayLabel.grid_forget()
-        self.lonLabel.grid_forget()
-        self.latLabel.grid_forget()
-        self.dirLabel.grid_forget()
-        self.comLabel.grid_forget()
-        self.namEntry.grid_forget()
-        self.dayEntry.grid_forget()
-        self.editName_Choser.grid_forget()
-        self.lonEntry.grid_forget()
-        self.latEntry.grid_forget()
-        self.dirEntry.grid_forget()
-        self.comEntry.grid_forget()
-        self.work_Data_confirm.grid_forget()
-
-        # save new data
+        # get the new data
         nam = self.namEntry.get()
         day = self.dayEntry.get()
-        lon = self.lonEntry.get()
-        lat = self.latEntry.get()
+        lat = float(self.latEntry.get())
+        lon = float(self.lonEntry.get())
         dir = self.dirEntry.get()
         com = self.comEntry.get()
-        print(day,lon,lat,dir,com)
-        print('ACTUALLY DO SOMETHIGN WITH THE DATA') # TODO
-        # load data
-        # if ___: # if name exists already then replace that entry
-        # else: # add a new entry
 
-        # clean entries
-        self.namEntry.delete(0,tk.END)
-        self.dayEntry.delete(0,tk.END)
-        self.lonEntry.delete(0,tk.END)
-        self.latEntry.delete(0,tk.END)
-        self.dirEntry.delete(0,tk.END)
-        self.comEntry.delete(0,tk.END)
+        # make sure you don't overwrite something
+        if self.nameIsNew == 1 and nam in self.nams:
+            print('This name already exists!\n'
+                  'Please choose something else.')
+        elif os.path.isfile(self.path+'\our-map\\'+dir): # Everything is good - continue!
+            # clean up GUI
+            self.add_Data.config(state='normal')
+            self.edit_Data.config(state='normal')
+            self.plot_Data.config(state='normal')
+            self.namLabel.grid_forget()
+            self.dayLabel.grid_forget()
+            self.latLabel.grid_forget()
+            self.lonLabel.grid_forget()
+            self.dirLabel.grid_forget()
+            self.comLabel.grid_forget()
+            self.namEntry.grid_forget()
+            self.dayEntry.grid_forget()
+            self.editName_Choser.grid_forget()
+            self.latEntry.grid_forget()
+            self.lonEntry.grid_forget()
+            self.dirEntry.grid_forget()
+            self.comEntry.grid_forget()
+            self.work_Data_confirm.grid_forget()
 
-    def update_editName(self,value):
+            print('Saving: {}, {}, {}, {}, {}'.format(day,lon,lat,dir,com))
+
+            # input data
+            if nam not in self.nams: # make a new entry
+                self.data[nam] = {}
+            self.data[nam]['day'] = day
+            self.data[nam]['lat'] = lat
+            self.data[nam]['lon'] = lon
+            self.data[nam]['dir'] = dir
+            self.data[nam]['com'] = com
+
+            # save data to file
+            with open(self.filename, "w") as write_file:
+                json.dump(self.data, write_file)
+
+            # clean entries
+            self.namEntry.delete(0,tk.END)
+            self.dayEntry.delete(0,tk.END)
+            self.lonEntry.delete(0,tk.END)
+            self.latEntry.delete(0,tk.END)
+            self.dirEntry.delete(0,tk.END)
+            self.comEntry.delete(0,tk.END)
+
+            self.setup_variables() # setup the variables!
+        else:
+            print("File doesn't exist!\n"
+                  "Please choose something else.")
+
+    def update_editName(self,value): # update the GUI when you choose a date to edit
         # enable entries to continue workflow
         self.dayEntry.config(state='normal')
-        self.lonEntry.config(state='normal')
         self.latEntry.config(state='normal')
+        self.lonEntry.config(state='normal')
         self.dirEntry.config(state='normal')
         self.comEntry.config(state='normal')
         self.work_Data_confirm.config(state='normal')
 
-        # edit day entry for consistent data storage
+        # clean entires
         self.namEntry.delete(0,tk.END)
-        self.namEntry.insert(tk.END, value)
+        self.dayEntry.delete(0,tk.END)
+        self.latEntry.delete(0,tk.END)
+        self.lonEntry.delete(0,tk.END)
+        self.dirEntry.delete(0,tk.END)
+        self.comEntry.delete(0,tk.END)
 
-        print('update edit {}'.format(value))
-        print('ACTUALLY DO SOMETHIGN WITH THE DATA') # TODO
+        # populate entries
+        self.namEntry.insert(tk.END, value)
+        self.dayEntry.insert(tk.END, self.data[value]['day'])
+        self.latEntry.insert(tk.END, self.data[value]['lat'])
+        self.lonEntry.insert(tk.END, self.data[value]['lon'])
+        self.dirEntry.insert(tk.END, self.data[value]['dir'])
+        self.comEntry.insert(tk.END, self.data[value]['com'])
+
+        print('Updating entry: {}'.format(value))
 
     def plotData(self):
         makeamap(self.filename)
