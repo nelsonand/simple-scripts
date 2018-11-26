@@ -46,8 +46,8 @@ def makeamap(filename):
     map.drawmapboundary()
 
     # create the annotations box
-    pic = mpimg.imread('pics\\profpic.png')
-    im = OffsetImage(pic, zoom=.05)
+    pic = mpimg.imread('pics\\profpic.png') # just to set up variables, will change later
+    im = OffsetImage(pic)
     xybox=(50., 50.)
     ab = AnnotationBbox(im, (0,0), xybox=xybox, xycoords='data',
             boxcoords="offset points",  pad=0.3,  arrowprops=dict(arrowstyle="->"))
@@ -77,6 +77,9 @@ def makeamap(filename):
                 # set the image corresponding to that point
                 dir = dirs[ind]
                 im.set_data(mpimg.imread(dir))
+                # change zoom of the image to deal with different file sizes
+                picsize = max(mpimg.imread(dir).shape)
+                im.set_zoom(0.2*(1000/picsize)) # optimum: zoom = 0.2, picsize = 1000
         else:
             #if you didn't click on a data point
             ab.set_visible(False)
