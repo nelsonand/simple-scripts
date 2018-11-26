@@ -44,6 +44,7 @@ def makeamap(filename):
     map.drawcoastlines(linewidth=0.50)
     map.fillcontinents()
     map.drawmapboundary()
+    map.drawcountries()
 
     # create the annotations box
     pic = mpimg.imread('pics\\profpic.png') # just to set up variables, will change later
@@ -54,6 +55,33 @@ def makeamap(filename):
     # add it to the axes and make it invisible
     ax.add_artist(ab)
     ab.set_visible(False)
+
+    # Declare and register callbacks for zoom control
+    def on_lims_change(axes):
+        xrange = abs(ax.get_xlim()[1] - ax.get_xlim()[0])
+        yrange = abs(ax.get_xlim()[1] - ax.get_xlim()[0])
+        print('max range: {}'.format(max(xrange,yrange)))
+        if max(xrange,yrange) < 1E7 and max(xrange,yrange) > 1E6: # 'l' = low
+            map.resolution = 'l'
+            map.drawstates()
+        elif max(xrange,yrange) < 1E6 and max(xrange,yrange) > 5E5: # 'i' = intermeditate
+            map.resolution = 'i'
+            map.drawstates()
+        elif max(xrange,yrange) < 5E5 and max(xrange,yrange) > 1E5: # 'h' = high
+            map.resolution = 'h'
+            map.drawstates()
+        elif max(xrange,yrange) < 1E5: # 'f' = full
+            map.resolution = 'f'
+            map.drawstates()
+        else: # 'c' = coarse
+            map.resolution = 'c'
+        print(map.resolution)
+        map.drawcoastlines(linewidth=0.50)
+        map.fillcontinents()
+        map.drawmapboundary()
+
+    ax.callbacks.connect('xlim_changed', on_lims_change)
+    #ax.callbacks.connect('ylim_changed', on_lims_change)
 
     def onclick(event): # if you click on a data point
         if line.contains(event)[0]:
