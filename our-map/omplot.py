@@ -83,6 +83,10 @@ def makeamap(filename):
     ax.callbacks.connect('xlim_changed', on_lims_change)
     #ax.callbacks.connect('ylim_changed', on_lims_change)
 
+    def format_coord(x, y):
+        return 'x=%.4f, y=%.4f'%(map(x, y, inverse = True))
+    ax.format_coord = format_coord
+
     def onclick(event): # if you click on a data point
         if line.contains(event)[0]:
             # find out the index within the array from the event
