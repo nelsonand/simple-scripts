@@ -11,7 +11,12 @@ import numpy as np
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk
-from omplot import makeamap
+# for plotting:
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import matplotlib.image as mpimg
+from omplot import ZoomPlot
 
 class MainApplication(ttk.Frame):
 
@@ -266,7 +271,25 @@ class MainApplication(ttk.Frame):
         print('Updating entry: {}'.format(value))
 
     def plotData(self):
-        makeamap(self.filename)
+        ''' GET THE DATA '''
+        with open(self.filename, "r") as read_file: #### THIS IS HOW YOU READ ####
+            data = json.load(read_file)
+
+        pnts = {}
+        pnts['days'] = []
+        pnts['lons'] = []
+        pnts['lats'] = []
+        pnts['dirs'] = []
+        pnts['coms'] = []
+        for name in data.keys():
+            pnts['days'].append(data[name]['day'])
+            pnts['lons'].append(data[name]['lon'])
+            pnts['lats'].append(data[name]['lat'])
+            pnts['dirs'].append(data[name]['dir'])
+            pnts['coms'].append(data[name]['com'])
+
+        plot = ZoomPlot(pnts)
+        plt.show()
 
 root = tk.Tk()
 root.style = ttk.Style()
