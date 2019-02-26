@@ -15,7 +15,7 @@ import os
 class ZoomPlot():
 
     def __init__(self, pnts):
-        self.fig = plt.figure(figsize=(25,15))
+        self.fig = plt.figure(figsize=(15,9))
         self.ax = self.fig.add_subplot(111)
 
         self.days = pnts['days']
@@ -37,8 +37,8 @@ class ZoomPlot():
                       llcrnrlon=self.bnds[2],urcrnrlon=self.bnds[3],resolution=self.resolution)
 
         self.map.drawcoastlines()
-        self.map.fillcontinents(color='0.4')
-        self.map.drawmapboundary()
+        self.map.drawmapboundary(fill_color='cornflowerblue')
+        self.map.fillcontinents(color='lightgreen', lake_color='aqua')
         self.map.drawcountries()
         self.map.drawstates()
 
@@ -49,7 +49,7 @@ class ZoomPlot():
         self.zoomcall = self.ax.callbacks.connect('ylim_changed', self.onzoom)
 
     def onzoom(self, axes):
-        print('zoom triggered')
+        #print('zoom triggered')
         self.ax.patches.clear()
         self.ax.collections.clear()
         self.ax.callbacks.disconnect(self.zoomcall)
@@ -68,19 +68,19 @@ class ZoomPlot():
         zoom_set = max(abs(self.bnds[0]-self.bnds[1]),abs(self.bnds[2]-self.bnds[3]))
         if zoom_set < 30 and zoom_set >= 3:
             self.resolution = 'l'
-            print('   --- low resolution')
+            #print('   --- low resolution')
         elif zoom_set < 3:
             self.resolution = 'i'
-            print('   --- intermeditate resolution')
+            #print('   --- intermeditate resolution')
         else:
             self.resolution = 'c'
-            print('   --- coarse resolution')
+            #print('   --- coarse resolution')
 
         self.plot_map()
 
     def plot_points(self):
         self.x, self.y = self.map(self.lons, self.lats)
-        self.line, = self.map.plot(self.x, self.y, 'bo')
+        self.line, = self.map.plot(self.x, self.y, color='darkmagenta', linestyle='none', marker='o', markeredgecolor='gold')
 
         # create the annotations box
         self.pic = mpimg.imread('pics\\profpic.png') # just to set up variables, will change later
@@ -116,7 +116,7 @@ class ZoomPlot():
                 self.im.set_data(mpimg.imread(dir))
                 # change zoom of the image to deal with different file sizes
                 picsize = max(mpimg.imread(dir).shape)
-                self.im.set_zoom(0.2*(1000/picsize)) # optimum: zoom = 0.2, picsize = 1000
+                self.im.set_zoom(0.4*(1000/picsize)) # optimum: zoom = 0.4, picsize = 1000
         else:
             #if you didn't click on a data point
             self.ab.set_visible(False)
