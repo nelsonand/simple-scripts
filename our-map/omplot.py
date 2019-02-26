@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as mpimg
 from datetime import datetime
+import time
 import copy
 import json
 import os
@@ -98,7 +99,12 @@ class ZoomPlot():
             try:
                 ind, = self.line.contains(event)[1]["ind"]
             except ValueError:
-                print('Please zoom in!')
+                self.ax.text(0.5, 0.5, 'Please zoom in!', fontsize=24,
+
+                             ha='center', va='center', transform=self.ax.transAxes, weight='bold')
+                self.fig.canvas.draw()
+                time.sleep(0.7)
+                self.ax.texts.clear()
             else:
                 # get the figure size
                 w,h = self.fig.get_size_inches()*self.fig.dpi
