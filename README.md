@@ -2,4 +2,4 @@
 
 # finance-tracker: track some finances over time
 
-# out-plot: store some pictures on a map
+# our-plot: store some pictures on a map
