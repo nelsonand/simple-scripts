@@ -131,7 +131,7 @@ def plotThedata(filename):
 
     #plt.subplots_adjust(left=0.15, bottom=None, right=0.95, top=None, hspace=0.4, wspace=0.40)
     plt.tight_layout()
-    plt.savefig(path + '\\PersonalFinances.png', bbox_inches='tight', dpi = 500)
+    plt.savefig(path + '/PersonalFinances.png', bbox_inches='tight', dpi = 500)
 
     ## THE INTERACTIVE STUFF ##
     def replace_right(source, target, replacement, replacements=None):

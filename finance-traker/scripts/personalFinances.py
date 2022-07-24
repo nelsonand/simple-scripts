@@ -30,7 +30,7 @@ class MainApplication(ttk.Frame):
         self.filler.grid(row=0, column=0, rowspan=100, columnspan=self.maxcol, sticky=tk.W+tk.E+tk.S+tk.N+tk.S+tk.N)
 
         ## Initiate Datafile ##
-        self.filename = 'data\personalFinancesData.json'
+        self.filename = 'data/personalFinancesData.json'
         try: # Simply try to open datafile. Close it and continue.
             f = open(self.filename); f.close()
         except FileNotFoundError: # Initialize data file
@@ -386,7 +386,7 @@ class MainApplication(ttk.Frame):
 
 root = tk.Tk()
 root.style = ttk.Style()
-root.style.theme_use('vista') # 'winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative'
+root.style.theme_use('clam') # 'winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative'
 root.style.configure('TLabel', background = '#7171C6', anchor='center')
 root.style.configure('TButton', background = 'gold1')
 MainApplication(root)
