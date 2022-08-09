@@ -13,8 +13,8 @@ import sys
 Location = 'PagosaSpings,CO'
 
 # Set start and end dates
-StartDate = '2020-01-01'
-EndDate = '2022-01-01'
+StartDate = '2012-01-01'
+EndDate = '2014-01-01'
 
 #### DEFAULTS ####
 
