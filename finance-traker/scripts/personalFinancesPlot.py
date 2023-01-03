@@ -23,6 +23,11 @@ def plotThedata(filename):
     subtypes = [data['subtype'][cat] for cat in data['data'].keys() if cat != 'Date']
     comments = data['comment']
 
+    # if the subtype is "Joint", divide the data by two
+    for cat in data['data'].keys():
+        if data['subtype'][cat] == 'Joint':
+            data['data'][cat] = [x * 0.5 for x in data['data'][cat]]
+
     totals = {}
     totals['types'] = {}
     totals['subtypes'] = {}
